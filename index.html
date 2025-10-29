@@ -190,19 +190,32 @@
       fetchWeather(url);
     }
 
+    // ✅ FIXED: Reliable location detection even when installed as PWA
     function getWeatherByLocation() {
-      if (navigator.geolocation) {
+      if (!('geolocation' in navigator)) {
+        weatherInfo.innerHTML = `<p class="error">Geolocation not supported by your browser.</p>`;
+        return;
+      }
+
+      navigator.permissions.query({ name: 'geolocation' }).then(permission => {
+        if (permission.state === 'denied') {
+          weatherInfo.innerHTML = `<p class="error">Location access denied. Please enable it in settings.</p>`;
+          return;
+        }
+
         navigator.geolocation.getCurrentPosition(
           pos => {
             const { latitude, longitude } = pos.coords;
             const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
             fetchWeather(url);
           },
-          () => weatherInfo.innerHTML = `<p class="error">Unable to access location.</p>`
+          err => {
+            console.error(err);
+            weatherInfo.innerHTML = `<p class="error">Unable to access location. Please allow permission.</p>`;
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
         );
-      } else {
-        weatherInfo.innerHTML = `<p class="error">Geolocation not supported.</p>`;
-      }
+      });
     }
 
     function fetchWeather(url) {
@@ -267,16 +280,15 @@
       lucide.createIcons();
     }
 
-    // Initialize icons
     lucide.createIcons();
 
-    // Register service worker
+    // ✅ Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(() => console.log('Service Worker Registered'));
     }
 
-    // PWA Install prompt
+    // ✅ PWA Install button logic
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
 
