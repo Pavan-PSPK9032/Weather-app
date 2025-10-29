@@ -4,8 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🌤️ Advanced Weather App</title>
+
+  <!-- Fonts and Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0078ff">
 
   <style>
     * {
@@ -119,16 +125,30 @@
       font-size: 14px;
     }
 
+    /* Install button */
+    #installBtn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #0078ff;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    #installBtn:hover {
+      background: #005fcc;
+    }
+
     @media (max-width: 480px) {
-      h1 {
-        font-size: 22px;
-      }
-      .container {
-        padding: 20px;
-      }
-      input, button {
-        font-size: 13px;
-      }
+      h1 { font-size: 22px; }
+      .container { padding: 20px; }
+      input, button { font-size: 13px; }
     }
   </style>
 </head>
@@ -148,8 +168,11 @@
     </div>
   </div>
 
+  <!-- Install Button -->
+  <button id="installBtn">⬇️ Install App</button>
+
   <script>
-    const apiKey = "7ff1d300e6794a5be74277ade0e5b966";
+    const apiKey = "3cae54db50e538875c8d7eaca5dbeb30";
     const searchBtn = document.getElementById("searchBtn");
     const cityInput = document.getElementById("cityInput");
     const locationBtn = document.getElementById("locationBtn");
@@ -213,7 +236,6 @@
       changeBackground(sys.country);
     }
 
-    // Weather icons via Lucide
     function getWeatherIcon(condition) {
       switch (condition) {
         case "clear": return `<i data-lucide="sun"></i>`;
@@ -227,7 +249,6 @@
       }
     }
 
-    // Dynamic background by country
     function changeBackground(countryCode) {
       const backgrounds = {
         US: "https://images.unsplash.com/photo-1503264116251-35a269479413",
@@ -241,15 +262,41 @@
         AE: "https://images.unsplash.com/photo-1571407970349-bc81e11edb6a",
         default: "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
       };
-
       const bgUrl = backgrounds[countryCode] || backgrounds.default;
       document.body.style.backgroundImage = `url('${bgUrl}?auto=format&fit=crop&w=1600&q=80')`;
-
-      // Refresh Lucide icons
       lucide.createIcons();
     }
 
+    // Initialize icons
     lucide.createIcons();
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker Registered'));
+    }
+
+    // PWA Install prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      installBtn.style.display = 'none';
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response: ${outcome}`);
+      deferredPrompt = null;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('App Installed!');
+    });
   </script>
 </body>
 </html>
