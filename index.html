@@ -1,339 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌤️ Advanced Weather App</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🌤️ Advanced Weather App - Live & Alerts</title>
 
-  <!-- Fonts and Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0078ff">
+  <link rel="manifest" href="manifest.json">
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:'Poppins',sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,#74ebd5,#ACB6E5);
+      color:#fff;
+      height:100vh;
+      transition:background-image .4s ease-in-out;
     }
-
-    body {
-      height: 100vh;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #fff;
-      background: linear-gradient(to right, #74ebd5, #ACB6E5);
-      background-size: cover;
-      background-position: center;
-      transition: background-image 0.5s ease-in-out;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 400px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 30px 25px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      animation: fadeIn 0.6s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
-    }
-
-    .search-box {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 15px;
-    }
-
-    input {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px 0 0 8px;
-      outline: none;
-      font-size: 14px;
-    }
-
-    button {
-      padding: 10px 14px;
-      border: none;
-      border-radius: 0 8px 8px 0;
-      background: #0078ff;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #005fcc;
-    }
-
-    .location-btn {
-      display: block;
-      width: 100%;
-      background: #00c853;
-      border-radius: 8px;
-      margin-top: 8px;
-      transition: background 0.3s;
-    }
-
-    .location-btn:hover {
-      background: #009624;
-    }
-
-    .weather-info {
-      margin-top: 25px;
-      transition: 0.3s;
-      text-transform: capitalize;
-    }
-
-    .weather-icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 10px;
-    }
-
-    .weather-info h2 {
-      font-size: 22px;
-      margin-bottom: 8px;
-    }
-
-    .weather-info p {
-      margin: 5px 0;
-      font-size: 16px;
-    }
-
-    .error {
-      color: #ffb3b3;
-      font-size: 14px;
-    }
-
-    #installBtn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #0078ff;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
-      display: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-
-    #installBtn:hover {
-      background: #005fcc;
-    }
-
-    @media (max-width: 480px) {
-      h1 { font-size: 22px; }
-      .container { padding: 20px; }
-      input, button { font-size: 13px; }
-    }
+    .card{width:92%;max-width:420px;background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border-radius:18px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.25)}
+    .heading{font-size:18px;margin-bottom:8px}
+    .weather-icon{width:96px;height:96px;margin:12px auto}
+    .desc{font-size:16px;text-transform:capitalize;margin:6px 0}
+    .temp{font-size:36px;font-weight:600;margin:6px 0}
+    .meta{display:flex;gap:18px;justify-content:center;margin-top:12px;font-size:14px}
+    .meta div{display:flex;flex-direction:column;align-items:center}
+    .controls{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+    input{padding:10px;border-radius:8px;border:none;outline:none;width:160px}
+    button{padding:10px 12px;border-radius:8px;border:none;background:#0078ff;color:#fff;cursor:pointer}
+    .small{font-size:12px;opacity:.9;margin-top:8px}
+    .toggle {display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px}
+    label{font-size:13px}
+    .error{color:#ffd1d1;font-size:13px;margin-top:8px}
+    .settings{margin-top:10px;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;font-size:13px;text-align:left}
+    .settings input[type="number"]{width:70px}
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>🌦️ Advanced Weather App</h1>
-    <div class="search-box">
-      <input type="text" id="cityInput" placeholder="Enter city name">
+  <div class="card">
+    <div class="heading">🌦️ Live Weather — Minimal View & Alerts</div>
+
+    <div id="weatherArea">
+      <div class="weather-icon" id="iconWrap"><i data-lucide="cloud"></i></div>
+      <div class="desc" id="desc">--</div>
+      <div class="temp" id="temp">--°C</div>
+      <div class="meta">
+        <div><div id="hum">--%</div><div class="small">Humidity</div></div>
+        <div><div id="wind">-- m/s</div><div class="small">Wind</div></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <input id="cityInput" placeholder="Search city (optional)" />
       <button id="searchBtn">Search</button>
+      <button id="locBtn">Use My Location</button>
+      <button id="notifyToggleBtn">Enable Alerts</button>
     </div>
 
-    <button id="locationBtn" class="location-btn">📍 Use My Location</button>
-
-    <div class="weather-info" id="weatherInfo">
-      <p>Enter a city name or use your location to see the weather.</p>
+    <div class="settings">
+      <div><b>Sensitivity</b> (lower = more sensitive)</div>
+      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+        <div>Temp Δ (°C): <input id="tempThresh" type="number" step="0.1" value="0.5"></div>
+        <div>Wind Δ (m/s): <input id="windThresh" type="number" step="0.1" value="1.0"></div>
+        <div>Humidity Δ (%): <input id="humThresh" type="number" step="1" value="5"></div>
+      </div>
+      <div class="small" style="margin-top:8px">Notifications: will trigger on condition change (e.g., clear → rain) or if any metric exceeds configured threshold.</div>
     </div>
+
+    <div id="msg" class="error" style="display:none"></div>
   </div>
 
-  <button id="installBtn">⬇️ Install App</button>
+<script>
+  // ---------- CONFIG ----------
+  const apiKey = "3cae54db50e538875c8d7eaca5dbeb30"; // your key
+  // ----------------------------
 
- <script>
-  const apiKey = "3cae54db50e538875c8d7eaca5dbeb30";
-  const searchBtn = document.getElementById("searchBtn");
-  const cityInput = document.getElementById("cityInput");
-  const locationBtn = document.getElementById("locationBtn");
-  const weatherInfo = document.getElementById("weatherInfo");
+  // UI refs
+  const iconWrap = document.getElementById('iconWrap');
+  const descEl = document.getElementById('desc');
+  const tempEl = document.getElementById('temp');
+  const humEl = document.getElementById('hum');
+  const windEl = document.getElementById('wind');
+  const msgEl = document.getElementById('msg');
+  const cityInput = document.getElementById('cityInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const locBtn = document.getElementById('locBtn');
+  const notifyToggleBtn = document.getElementById('notifyToggleBtn');
+  const tempThreshInput = document.getElementById('tempThresh');
+  const windThreshInput = document.getElementById('windThresh');
+  const humThreshInput = document.getElementById('humThresh');
 
-  searchBtn.addEventListener("click", () => {
-    const city = cityInput.value.trim();
-    if (city) getWeatherByCity(city);
-  });
+  // state
+  let lastWeather = null; // {id, temp, wind, hum, main}
+  let currentWatchId = null;
+  let notifyEnabled = false;
 
-  locationBtn.addEventListener("click", getLiveLocationWeather);
+  // init icons
+  lucide.createIcons();
 
-  // 🔍 City-based search
-  function getWeatherByCity(city) {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-    fetchWeather(url);
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(e => console.warn('SW register failed', e));
   }
 
-  // ✅ Fixed Live GPS Location with real-time updates + fallback
-  function getLiveLocationWeather() {
-    if (!("geolocation" in navigator)) {
-      console.warn("No GPS support, using IP fallback");
-      return fallbackToIP();
+  // ---------- helper functions ----------
+  function showMsg(text, show=true){
+    msgEl.style.display = show ? 'block' : 'none';
+    msgEl.textContent = text || '';
+  }
+
+  function getWeatherIconMarkup(main){
+    switch((main||'').toLowerCase()){
+      case 'clear': return `<i data-lucide="sun"></i>`;
+      case 'clouds': return `<i data-lucide="cloud"></i>`;
+      case 'rain': return `<i data-lucide="cloud-rain"></i>`;
+      case 'drizzle': return `<i data-lucide="cloud-drizzle"></i>`;
+      case 'thunderstorm': return `<i data-lucide="cloud-lightning"></i>`;
+      case 'snow': return `<i data-lucide="snowflake"></i>`;
+      case 'mist':
+      case 'fog': return `<i data-lucide="cloud-fog"></i>`;
+      default: return `<i data-lucide="cloud"></i>`;
+    }
+  }
+
+  function readThresholds(){
+    const t = parseFloat(tempThreshInput.value) || 0.5;
+    const w = parseFloat(windThreshInput.value) || 1.0;
+    const h = parseFloat(humThreshInput.value) || 5;
+    return {tempDelta: Math.abs(t), windDelta: Math.abs(w), humDelta: Math.abs(h)};
+  }
+
+  // Update UI always (we only show weather fields)
+  function updateUI(data){
+    const w = data.weather && data.weather[0];
+    const main = w ? w.main : '';
+    const description = w ? w.description : '';
+    const t = data.main ? Number(data.main.temp.toFixed(1)) : null;
+    const humidity = data.main ? data.main.humidity : null;
+    const windSpeed = data.wind ? data.wind.speed : null;
+
+    iconWrap.innerHTML = getWeatherIconMarkup(main);
+    lucide.createIcons();
+    descEl.textContent = description || '--';
+    tempEl.textContent = (t !== null) ? `${t}°C` : '--';
+    humEl.textContent = humidity !== null ? `${humidity}%` : '--';
+    windEl.textContent = windSpeed !== null ? `${windSpeed} m/s` : '--';
+  }
+
+  // Determine if change is significant (and optionally notify)
+  async function handleNewWeather(data){
+    const w = data.weather && data.weather[0];
+    const id = w ? w.id : null;
+    const main = w ? w.main : '';
+    const t = data.main ? Number(data.main.temp.toFixed(1)) : null;
+    const humidity = data.main ? data.main.humidity : null;
+    const windSpeed = data.wind ? data.wind.speed : null;
+
+    // If no last state, update & set
+    if (!lastWeather) {
+      lastWeather = { id, main, temp: t, wind: windSpeed, hum: humidity };
+      updateUI(data);
+      return;
     }
 
-    weatherInfo.innerHTML = `<p>📡 Getting your live location...</p>`;
+    const thresholds = readThresholds();
+    let significant = false;
+    let messages = [];
 
-    // watchPosition gives real-time updates and no cache
-    const watchID = navigator.geolocation.watchPosition(
+    // condition id change (rain / thunder / clear etc.)
+    if (id !== lastWeather.id) {
+      significant = true;
+      messages.push(`Condition changed: ${lastWeather.main || 'unknown'} → ${main}`);
+    }
+
+    // temp change
+    if (t !== null && lastWeather.temp !== null && Math.abs(t - lastWeather.temp) >= thresholds.tempDelta) {
+      significant = true;
+      messages.push(`Temp changed by ${Math.abs(t - lastWeather.temp).toFixed(1)}°C`);
+    }
+
+    // wind change
+    if (windSpeed !== null && lastWeather.wind !== null && Math.abs(windSpeed - lastWeather.wind) >= thresholds.windDelta) {
+      significant = true;
+      messages.push(`Wind changed by ${Math.abs(windSpeed - lastWeather.wind).toFixed(1)} m/s`);
+    }
+
+    // humidity change
+    if (humidity !== null && lastWeather.hum !== null && Math.abs(humidity - lastWeather.hum) >= thresholds.humDelta) {
+      significant = true;
+      messages.push(`Humidity changed by ${Math.abs(humidity - lastWeather.hum)}%`);
+    }
+
+    // If significant, update UI and optionally notify
+    if (significant) {
+      updateUI(data);
+
+      // Build a notification summary
+      if (notifyEnabled) {
+        const title = (main && /rain|thunder/i.test(main)) ? `Weather Alert: ${main}` : `Weather update`;
+        const body = messages.join(' · ');
+        triggerNotification(title, body);
+      }
+
+      // Save last
+      lastWeather = { id, main, temp: t, wind: windSpeed, hum: humidity };
+      showMsg('', false);
+    } else {
+      // Not significant — update UI but message briefly
+      showMsg('No significant change', true);
+      setTimeout(()=> showMsg('', false), 1000);
+    }
+  }
+
+  // Fetch weather by coords
+  async function fetchWeatherByCoords(lat, lon){
+    try {
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Weather fetch failed');
+      const data = await res.json();
+      await handleNewWeather(data);
+    } catch (e) {
+      showMsg('Error fetching weather: ' + e.message);
+    }
+  }
+
+  // Fetch weather by city
+  async function fetchWeatherByCityName(city){
+    try {
+      showMsg('Searching city...', true);
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('City not found');
+      const data = await res.json();
+      await handleNewWeather(data);
+    } catch (e) {
+      showMsg('Error: ' + e.message);
+    }
+  }
+
+  // IP fallback
+  async function ipFallback(){
+    try {
+      const res = await fetch('https://ipapi.co/json/');
+      if (!res.ok) throw new Error('IP fallback failed');
+      const data = await res.json();
+      if (data.latitude && data.longitude) {
+        fetchWeatherByCoords(data.latitude, data.longitude);
+      } else if (data.city) {
+        fetchWeatherByCityName(data.city);
+      } else {
+        showMsg('Unable to detect location via IP.');
+      }
+    } catch (e) {
+      showMsg('IP fallback error: ' + e.message);
+    }
+  }
+
+  // Start continuous watch (no auto-clear)
+  function startWatchingLocation(){
+    if (!('geolocation' in navigator)) {
+      showMsg('Geolocation not supported — using IP fallback');
+      ipFallback();
+      return;
+    }
+
+    showMsg('Watching live GPS location...', true);
+
+    // if already watching, don't start another
+    if (currentWatchId !== null) return;
+
+    currentWatchId = navigator.geolocation.watchPosition(
       (pos) => {
-        const { latitude, longitude } = pos.coords;
-        console.log(`📍 Live GPS: ${latitude}, ${longitude}`);
-        fetchWeatherByCoords(latitude, longitude);
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        // fetch every time coords change sufficiently
+        // small delta threshold to avoid too-frequent network calls
+        fetchWeatherByCoords(lat, lon);
       },
       (err) => {
-        console.warn("GPS failed, using IP fallback:", err.message);
-        fallbackToIP();
+        console.warn('GPS error:', err);
+        showMsg('GPS failed or permission denied — using IP fallback');
+        ipFallback();
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+        maximumAge: 0,
+        timeout: 15000
       }
     );
-
-    // Stop watching after 2 updates to save battery
-    setTimeout(() => navigator.geolocation.clearWatch(watchID), 15000);
   }
 
-  // 🌐 IP fallback
-  function fallbackToIP() {
-    fetch("https://ipapi.co/json/")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.latitude && data.longitude) {
-          fetchWeatherByCoords(data.latitude, data.longitude);
-        } else {
-          weatherInfo.innerHTML = `<p class="error">Unable to detect location.</p>`;
-        }
-      })
-      .catch(() => {
-        weatherInfo.innerHTML = `<p class="error">Location detection failed.</p>`;
-      });
+  // Notifications: ask permission and toggle
+  async function requestAndEnableNotifications(){
+    if (!('Notification' in window)) {
+      showMsg('Notifications not supported in this browser');
+      return false;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      showMsg('Please allow notifications in browser settings');
+      notifyEnabled = false;
+      notifyToggleBtn.textContent = 'Enable Alerts';
+      return false;
+    }
+    notifyEnabled = true;
+    notifyToggleBtn.textContent = 'Disable Alerts';
+    showMsg('Alerts enabled', true);
+    setTimeout(()=> showMsg('', false), 1200);
+    return true;
   }
 
-  // 🛰️ Fetch by coordinates
-  function fetchWeatherByCoords(lat, lon) {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-    fetchWeather(url);
-  }
-
-  // ☁️ Fetch and display
-  function fetchWeather(url) {
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) throw new Error("City not found");
-        return res.json();
-      })
-      .then((data) => displayWeather(data))
-      .catch((err) => (weatherInfo.innerHTML = `<p class="error">${err.message}</p>`));
-  }
-
-  function displayWeather(data) {
-    const { name, sys, main, weather, wind } = data;
-    const desc = weather[0].description;
-    const temp = main.temp.toFixed(1);
-    const humidity = main.humidity;
-    const windSpeed = wind.speed;
-    const iconHTML = getWeatherIcon(weather[0].main.toLowerCase());
-
-    weatherInfo.innerHTML = `
-      <div class="weather-icon">${iconHTML}</div>
-      <h2>${name}, ${sys.country}</h2>
-      <p>${desc}</p>
-      <p>🌡️ ${temp}°C</p>
-      <p>💧 Humidity: ${humidity}%</p>
-      <p>💨 Wind: ${windSpeed} m/s</p>
-    `;
-
-    changeBackground(sys.country);
-  }
-
-  function getWeatherIcon(condition) {
-    switch (condition) {
-      case "clear": return `<i data-lucide="sun"></i>`;
-      case "clouds": return `<i data-lucide="cloud"></i>`;
-      case "rain": return `<i data-lucide="cloud-rain"></i>`;
-      case "thunderstorm": return `<i data-lucide="cloud-lightning"></i>`;
-      case "snow": return `<i data-lucide="snowflake"></i>`;
-      case "mist":
-      case "fog": return `<i data-lucide="cloud-fog"></i>`;
-      default: return `<i data-lucide="cloud-drizzle"></i>`;
+  // Trigger a notification via service worker registration (works when page in background/ PWA)
+  async function triggerNotification(title, body){
+    try {
+      // prefer service worker showNotification if available
+      const reg = await navigator.serviceWorker.getRegistration();
+      const options = {
+        body,
+        icon: '/icons/android-chrome-192x192.png', // your icon path (optional)
+        badge: '/icons/android-chrome-96x96.png',
+        vibrate: [100,50,100],
+        tag: 'weather-alert',
+        renotify: true,
+        data: { time: Date.now() }
+      };
+      if (reg && reg.showNotification) {
+        reg.showNotification(title, options);
+      } else {
+        // fallback to Notification API
+        new Notification(title, options);
+      }
+    } catch (e) {
+      console.warn('Notify failed:', e);
     }
   }
 
-  function changeBackground(countryCode) {
-    const backgrounds = {
-      US: "https://images.unsplash.com/photo-1503264116251-35a269479413",
-      IN: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da",
-      GB: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad",
-      FR: "https://images.unsplash.com/photo-1522098543979-ffc7f79d57d5",
-      JP: "https://images.unsplash.com/photo-1526483360412-f4dbaf036963",
-      BR: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-      CA: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-      AU: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-      AE: "https://images.unsplash.com/photo-1571407970349-bc81e11edb6a",
-      default: "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
-    };
-    const bgUrl = backgrounds[countryCode] || backgrounds.default;
-    document.body.style.backgroundImage = `url('${bgUrl}?auto=format&fit=crop&w=1600&q=80')`;
-    lucide.createIcons();
-  }
-
-  // Lucide icons init
-  lucide.createIcons();
-
-  // PWA install setup
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-      .then(() => console.log("Service Worker Registered"));
-  }
-
-  let deferredPrompt;
-  const installBtn = document.getElementById("installBtn");
-
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = "block";
+  // UI events
+  searchBtn.addEventListener('click', () => {
+    const city = cityInput.value.trim();
+    if (!city) { showMsg('Enter a city name'); return; }
+    fetchWeatherByCityName(city);
   });
 
-  installBtn.addEventListener("click", async () => {
-    installBtn.style.display = "none";
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response: ${outcome}`);
-    deferredPrompt = null;
+  locBtn.addEventListener('click', () => {
+    startWatchingLocation();
   });
 
-  window.addEventListener("appinstalled", () => {
-    console.log("App Installed!");
+  notifyToggleBtn.addEventListener('click', async () => {
+    if (notifyEnabled) {
+      notifyEnabled = false;
+      notifyToggleBtn.textContent = 'Enable Alerts';
+      showMsg('Alerts disabled', true);
+      setTimeout(()=> showMsg('', false), 800);
+    } else {
+      await requestAndEnableNotifications();
+    }
   });
+
+  // start watching on load
+  window.addEventListener('load', () => {
+    startWatchingLocation();
+  });
+
+  // Initialize small default UI
+  updateUI({ weather: [{ main:'--', description:'--' }], main: { temp: null, humidity: null }, wind: { speed: null } });
+
 </script>
-
 </body>
 </html>
