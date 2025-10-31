@@ -23,7 +23,7 @@
     background: linear-gradient(to bottom right, #1e3c72, #2a5298);
     background-size: cover;
     background-position: center;
-    transition: background-image 1s ease;
+    transition: background 1s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -150,6 +150,10 @@
       <div><b>Humidity</b><br><span id="humidity">--%</span></div>
       <div><b>Pressure</b><br><span id="pressure">-- hPa</span></div>
       <div><b>Wind</b><br><span id="wind">-- km/h</span></div>
+      <div><b>Feels Like</b><br><span id="feelslike">--°C</span></div>
+      <div><b>Sunrise</b><br><span id="sunrise">--:--</span></div>
+      <div><b>Sunset</b><br><span id="sunset">--:--</span></div>
+      <div><b>Visibility</b><br><span id="visibility">-- km</span></div>
       <div><b>UV</b><br><span id="uv">--</span></div>
     </div>
 
@@ -189,6 +193,10 @@
     const humidity = weatherData.main.humidity;
     const pressure = weatherData.main.pressure;
     const wind = weatherData.wind.speed;
+    const feelslike = Math.round(weatherData.main.feels_like);
+    const visibility = (weatherData.visibility / 1000).toFixed(1);
+    const sunrise = formatTime(weatherData.sys.sunrise);
+    const sunset = formatTime(weatherData.sys.sunset);
     const main = condition.toLowerCase();
 
     document.getElementById("temp").innerText = temp + "°";
@@ -197,6 +205,10 @@
     document.getElementById("humidity").innerText = humidity + "%";
     document.getElementById("pressure").innerText = pressure + " hPa";
     document.getElementById("wind").innerText = wind + " km/h";
+    document.getElementById("feelslike").innerText = feelslike + "°C";
+    document.getElementById("visibility").innerText = visibility + " km";
+    document.getElementById("sunrise").innerText = sunrise;
+    document.getElementById("sunset").innerText = sunset;
     document.getElementById("uv").innerText = temp > 32 ? "High" : temp > 25 ? "Moderate" : "Low";
 
     setBackground(main);
@@ -205,17 +217,22 @@
     showAlert(condition);
   }
 
+  function formatTime(timestamp) {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
   function setBackground(main) {
     if (main.includes("cloud")) {
-      document.body.style.backgroundImage = "url('https://i.gifer.com/7scA.gif')";
+      document.body.style.background = "linear-gradient(to bottom right, #bdc3c7, #2c3e50)";
     } else if (main.includes("rain")) {
-      document.body.style.backgroundImage = "url('https://i.gifer.com/Vx1m.gif')";
+      document.body.style.background = "linear-gradient(to bottom right, #283e51, #485563)";
     } else if (main.includes("clear")) {
-      document.body.style.backgroundImage = "url('https://i.gifer.com/XwIu.gif')";
+      document.body.style.background = "linear-gradient(to bottom right, #56ccf2, #2f80ed)";
     } else if (main.includes("snow")) {
-      document.body.style.backgroundImage = "url('https://i.gifer.com/Bzt5.gif')";
+      document.body.style.background = "linear-gradient(to bottom right, #83a4d4, #b6fbff)";
     } else {
-      document.body.style.backgroundImage = "url('https://i.gifer.com/fy6V.gif')";
+      document.body.style.background = "linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)";
     }
   }
 
