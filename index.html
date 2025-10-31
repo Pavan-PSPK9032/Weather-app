@@ -169,158 +169,171 @@
 
   <button id="installBtn">⬇️ Install App</button>
 
-  <script>
-    const apiKey = "3cae54db50e538875c8d7eaca5dbeb30";
-    const searchBtn = document.getElementById("searchBtn");
-    const cityInput = document.getElementById("cityInput");
-    const locationBtn = document.getElementById("locationBtn");
-    const weatherInfo = document.getElementById("weatherInfo");
+ <script>
+  const apiKey = "3cae54db50e538875c8d7eaca5dbeb30";
+  const searchBtn = document.getElementById("searchBtn");
+  const cityInput = document.getElementById("cityInput");
+  const locationBtn = document.getElementById("locationBtn");
+  const weatherInfo = document.getElementById("weatherInfo");
 
-    searchBtn.addEventListener("click", () => {
-      const city = cityInput.value.trim();
-      if (city) getWeatherByCity(city);
-    });
+  searchBtn.addEventListener("click", () => {
+    const city = cityInput.value.trim();
+    if (city) getWeatherByCity(city);
+  });
 
-    locationBtn.addEventListener("click", getWeatherByLocation);
+  locationBtn.addEventListener("click", getLiveLocationWeather);
 
-    function getWeatherByCity(city) {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
-      fetchWeather(url);
+  // 🔍 City-based search
+  function getWeatherByCity(city) {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+    fetchWeather(url);
+  }
+
+  // ✅ Fixed Live GPS Location with real-time updates + fallback
+  function getLiveLocationWeather() {
+    if (!("geolocation" in navigator)) {
+      console.warn("No GPS support, using IP fallback");
+      return fallbackToIP();
     }
 
-    // ✅ Improved Location Function with GPS + IP fallback
-    function getWeatherByLocation() {
-      if (!('geolocation' in navigator)) {
+    weatherInfo.innerHTML = `<p>📡 Getting your live location...</p>`;
+
+    // watchPosition gives real-time updates and no cache
+    const watchID = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        console.log(`📍 Live GPS: ${latitude}, ${longitude}`);
+        fetchWeatherByCoords(latitude, longitude);
+      },
+      (err) => {
+        console.warn("GPS failed, using IP fallback:", err.message);
         fallbackToIP();
-        return;
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
+    );
 
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          const { latitude, longitude } = pos.coords;
-          fetchWeatherByCoords(latitude, longitude);
-        },
-        err => {
-          console.warn('GPS failed, using IP fallback:', err.message);
-          fallbackToIP();
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0 // ensures fresh location
+    // Stop watching after 2 updates to save battery
+    setTimeout(() => navigator.geolocation.clearWatch(watchID), 15000);
+  }
+
+  // 🌐 IP fallback
+  function fallbackToIP() {
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.latitude && data.longitude) {
+          fetchWeatherByCoords(data.latitude, data.longitude);
+        } else {
+          weatherInfo.innerHTML = `<p class="error">Unable to detect location.</p>`;
         }
-      );
+      })
+      .catch(() => {
+        weatherInfo.innerHTML = `<p class="error">Location detection failed.</p>`;
+      });
+  }
+
+  // 🛰️ Fetch by coordinates
+  function fetchWeatherByCoords(lat, lon) {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    fetchWeather(url);
+  }
+
+  // ☁️ Fetch and display
+  function fetchWeather(url) {
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error("City not found");
+        return res.json();
+      })
+      .then((data) => displayWeather(data))
+      .catch((err) => (weatherInfo.innerHTML = `<p class="error">${err.message}</p>`));
+  }
+
+  function displayWeather(data) {
+    const { name, sys, main, weather, wind } = data;
+    const desc = weather[0].description;
+    const temp = main.temp.toFixed(1);
+    const humidity = main.humidity;
+    const windSpeed = wind.speed;
+    const iconHTML = getWeatherIcon(weather[0].main.toLowerCase());
+
+    weatherInfo.innerHTML = `
+      <div class="weather-icon">${iconHTML}</div>
+      <h2>${name}, ${sys.country}</h2>
+      <p>${desc}</p>
+      <p>🌡️ ${temp}°C</p>
+      <p>💧 Humidity: ${humidity}%</p>
+      <p>💨 Wind: ${windSpeed} m/s</p>
+    `;
+
+    changeBackground(sys.country);
+  }
+
+  function getWeatherIcon(condition) {
+    switch (condition) {
+      case "clear": return `<i data-lucide="sun"></i>`;
+      case "clouds": return `<i data-lucide="cloud"></i>`;
+      case "rain": return `<i data-lucide="cloud-rain"></i>`;
+      case "thunderstorm": return `<i data-lucide="cloud-lightning"></i>`;
+      case "snow": return `<i data-lucide="snowflake"></i>`;
+      case "mist":
+      case "fog": return `<i data-lucide="cloud-fog"></i>`;
+      default: return `<i data-lucide="cloud-drizzle"></i>`;
     }
+  }
 
-    function fallbackToIP() {
-      fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-          if (data.latitude && data.longitude) {
-            fetchWeatherByCoords(data.latitude, data.longitude);
-          } else {
-            weatherInfo.innerHTML = `<p class="error">Unable to detect location.</p>`;
-          }
-        })
-        .catch(() => {
-          weatherInfo.innerHTML = `<p class="error">Location detection failed.</p>`;
-        });
-    }
-
-    function fetchWeatherByCoords(lat, lon) {
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-      fetchWeather(url);
-    }
-
-    function fetchWeather(url) {
-      fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error("City not found");
-          return res.json();
-        })
-        .then(data => displayWeather(data))
-        .catch(err => weatherInfo.innerHTML = `<p class="error">${err.message}</p>`);
-    }
-
-    function displayWeather(data) {
-      const { name, sys, main, weather, wind } = data;
-      const desc = weather[0].description;
-      const temp = main.temp.toFixed(1);
-      const humidity = main.humidity;
-      const windSpeed = wind.speed;
-
-      const iconHTML = getWeatherIcon(weather[0].main.toLowerCase());
-
-      weatherInfo.innerHTML = `
-        <div class="weather-icon">${iconHTML}</div>
-        <h2>${name}, ${sys.country}</h2>
-        <p>${desc}</p>
-        <p>🌡️ ${temp}°C</p>
-        <p>💧 Humidity: ${humidity}%</p>
-        <p>💨 Wind: ${windSpeed} m/s</p>
-      `;
-
-      changeBackground(sys.country);
-    }
-
-    function getWeatherIcon(condition) {
-      switch (condition) {
-        case "clear": return `<i data-lucide="sun"></i>`;
-        case "clouds": return `<i data-lucide="cloud"></i>`;
-        case "rain": return `<i data-lucide="cloud-rain"></i>`;
-        case "thunderstorm": return `<i data-lucide="cloud-lightning"></i>`;
-        case "snow": return `<i data-lucide="snowflake"></i>`;
-        case "mist":
-        case "fog": return `<i data-lucide="cloud-fog"></i>`;
-        default: return `<i data-lucide="cloud-drizzle"></i>`;
-      }
-    }
-
-    function changeBackground(countryCode) {
-      const backgrounds = {
-        US: "https://images.unsplash.com/photo-1503264116251-35a269479413",
-        IN: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da",
-        GB: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad",
-        FR: "https://images.unsplash.com/photo-1522098543979-ffc7f79d57d5",
-        JP: "https://images.unsplash.com/photo-1526483360412-f4dbaf036963",
-        BR: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-        CA: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-        AU: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-        AE: "https://images.unsplash.com/photo-1571407970349-bc81e11edb6a",
-        default: "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
-      };
-      const bgUrl = backgrounds[countryCode] || backgrounds.default;
-      document.body.style.backgroundImage = `url('${bgUrl}?auto=format&fit=crop&w=1600&q=80')`;
-      lucide.createIcons();
-    }
-
+  function changeBackground(countryCode) {
+    const backgrounds = {
+      US: "https://images.unsplash.com/photo-1503264116251-35a269479413",
+      IN: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da",
+      GB: "https://images.unsplash.com/photo-1505761671935-60b3a7427bad",
+      FR: "https://images.unsplash.com/photo-1522098543979-ffc7f79d57d5",
+      JP: "https://images.unsplash.com/photo-1526483360412-f4dbaf036963",
+      BR: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
+      CA: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
+      AU: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+      AE: "https://images.unsplash.com/photo-1571407970349-bc81e11edb6a",
+      default: "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+    };
+    const bgUrl = backgrounds[countryCode] || backgrounds.default;
+    document.body.style.backgroundImage = `url('${bgUrl}?auto=format&fit=crop&w=1600&q=80')`;
     lucide.createIcons();
+  }
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log('Service Worker Registered'));
-    }
+  // Lucide icons init
+  lucide.createIcons();
 
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
+  // PWA install setup
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker Registered"));
+  }
 
-    window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'block';
-    });
+  let deferredPrompt;
+  const installBtn = document.getElementById("installBtn");
 
-    installBtn.addEventListener('click', async () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`User response: ${outcome}`);
-      deferredPrompt = null;
-    });
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "block";
+  });
 
-    window.addEventListener('appinstalled', () => {
-      console.log('App Installed!');
-    });
-  </script>
+  installBtn.addEventListener("click", async () => {
+    installBtn.style.display = "none";
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response: ${outcome}`);
+    deferredPrompt = null;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    console.log("App Installed!");
+  });
+</script>
+
 </body>
 </html>
