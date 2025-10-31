@@ -1,379 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>🌤️ Advanced Weather App - Live & Alerts</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🌤️ Advanced Weather Dashboard</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <meta name="theme-color" content="#0078ff">
-  <link rel="manifest" href="manifest.json">
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
 
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:'Poppins',sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:linear-gradient(135deg,#74ebd5,#ACB6E5);
-      color:#fff;
-      height:100vh;
-      transition:background-image .4s ease-in-out;
-    }
-    .card{width:92%;max-width:420px;background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border-radius:18px;padding:22px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.25)}
-    .heading{font-size:18px;margin-bottom:8px}
-    .weather-icon{width:96px;height:96px;margin:12px auto}
-    .desc{font-size:16px;text-transform:capitalize;margin:6px 0}
-    .temp{font-size:36px;font-weight:600;margin:6px 0}
-    .meta{display:flex;gap:18px;justify-content:center;margin-top:12px;font-size:14px}
-    .meta div{display:flex;flex-direction:column;align-items:center}
-    .controls{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
-    input{padding:10px;border-radius:8px;border:none;outline:none;width:160px}
-    button{padding:10px 12px;border-radius:8px;border:none;background:#0078ff;color:#fff;cursor:pointer}
-    .small{font-size:12px;opacity:.9;margin-top:8px}
-    .toggle {display:flex;gap:8px;align-items:center;justify-content:center;margin-top:10px}
-    label{font-size:13px}
-    .error{color:#ffd1d1;font-size:13px;margin-top:8px}
-    .settings{margin-top:10px;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;font-size:13px;text-align:left}
-    .settings input[type="number"]{width:70px}
-  </style>
+  body {
+    min-height: 100vh;
+    color: #fff;
+    background: linear-gradient(to bottom right, #1e3c72, #2a5298);
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .weather-app {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .search {
+    display: flex;
+    margin-bottom: 15px;
+  }
+
+  .search input {
+    flex: 1;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    outline: none;
+    font-size: 15px;
+  }
+
+  .search button {
+    background: #3498db;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 0 10px 10px 0;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .main-info {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  .main-info h1 {
+    font-size: 60px;
+    font-weight: 600;
+  }
+
+  .main-info p {
+    font-size: 18px;
+    margin: 5px 0;
+  }
+
+  .stats {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stats div {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .forecast-5day {
+    margin-top: 20px;
+  }
+
+  .forecast-5day h3 {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .forecast-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .forecast-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    text-align: center;
+    padding: 10px;
+    flex: 1;
+  }
+
+  .alert-box {
+    margin-top: 15px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: bold;
+    display: none;
+  }
+
+  canvas {
+    margin-top: 15px;
+  }
+</style>
 </head>
 <body>
-  <div class="card">
-    <div class="heading">🌦️ Live Weather — Minimal View & Alerts</div>
-
-    <div id="weatherArea">
-      <div class="weather-icon" id="iconWrap"><i data-lucide="cloud"></i></div>
-      <div class="desc" id="desc">--</div>
-      <div class="temp" id="temp">--°C</div>
-      <div class="meta">
-        <div><div id="hum">--%</div><div class="small">Humidity</div></div>
-        <div><div id="wind">-- m/s</div><div class="small">Wind</div></div>
-      </div>
+  <div class="weather-app">
+    <div class="search">
+      <input type="text" id="cityInput" placeholder="Enter city name...">
+      <button onclick="getWeather()">Search</button>
     </div>
 
-    <div class="controls">
-      <input id="cityInput" placeholder="Search city (optional)" />
-      <button id="searchBtn">Search</button>
-      <button id="locBtn">Use My Location</button>
-      <button id="notifyToggleBtn">Enable Alerts</button>
+    <div class="main-info">
+      <h1 id="temp">--°</h1>
+      <p id="condition">---</p>
+      <p id="location">---</p>
     </div>
 
-    <div class="settings">
-      <div><b>Sensitivity</b> (lower = more sensitive)</div>
-      <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
-        <div>Temp Δ (°C): <input id="tempThresh" type="number" step="0.1" value="0.5"></div>
-        <div>Wind Δ (m/s): <input id="windThresh" type="number" step="0.1" value="1.0"></div>
-        <div>Humidity Δ (%): <input id="humThresh" type="number" step="1" value="5"></div>
-      </div>
-      <div class="small" style="margin-top:8px">Notifications: will trigger on condition change (e.g., clear → rain) or if any metric exceeds configured threshold.</div>
+    <canvas id="hourlyChart" height="100"></canvas>
+
+    <div class="stats">
+      <div><b>Humidity</b><br><span id="humidity">--%</span></div>
+      <div><b>Pressure</b><br><span id="pressure">-- hPa</span></div>
+      <div><b>Wind</b><br><span id="wind">-- km/h</span></div>
+      <div><b>UV</b><br><span id="uv">--</span></div>
     </div>
 
-    <div id="msg" class="error" style="display:none"></div>
+    <div class="forecast-5day">
+      <h3>5-Day Forecast</h3>
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </div>
+
+    <div class="alert-box" id="alertBox">⚠️ Weather Alert!</div>
   </div>
 
 <script>
-  // ---------- CONFIG ----------
-  const apiKey = "3cae54db50e538875c8d7eaca5dbeb30"; // your key
-  // ----------------------------
+  const apiKey = "3cae54db50e538875c8d7eaca5dbeb30";
+  let chart;
 
-  // UI refs
-  const iconWrap = document.getElementById('iconWrap');
-  const descEl = document.getElementById('desc');
-  const tempEl = document.getElementById('temp');
-  const humEl = document.getElementById('hum');
-  const windEl = document.getElementById('wind');
-  const msgEl = document.getElementById('msg');
-  const cityInput = document.getElementById('cityInput');
-  const searchBtn = document.getElementById('searchBtn');
-  const locBtn = document.getElementById('locBtn');
-  const notifyToggleBtn = document.getElementById('notifyToggleBtn');
-  const tempThreshInput = document.getElementById('tempThresh');
-  const windThreshInput = document.getElementById('windThresh');
-  const humThreshInput = document.getElementById('humThresh');
+  async function getWeather() {
+    const city = document.getElementById("cityInput").value.trim() || "Hyderabad";
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
 
-  // state
-  let lastWeather = null; // {id, temp, wind, hum, main}
-  let currentWatchId = null;
-  let notifyEnabled = false;
+    try {
+      const weatherRes = await fetch(weatherUrl);
+      const weatherData = await weatherRes.json();
+      const forecastRes = await fetch(forecastUrl);
+      const forecastData = await forecastRes.json();
 
-  // init icons
-  lucide.createIcons();
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').then(reg => {
-      console.log('SW registered:', reg.scope);
-    }).catch(e => console.warn('SW register failed', e));
-  }
-
-  // ---------- helper functions ----------
-  function showMsg(text, show=true){
-    msgEl.style.display = show ? 'block' : 'none';
-    msgEl.textContent = text || '';
-  }
-
-  function getWeatherIconMarkup(main){
-    switch((main||'').toLowerCase()){
-      case 'clear': return `<i data-lucide="sun"></i>`;
-      case 'clouds': return `<i data-lucide="cloud"></i>`;
-      case 'rain': return `<i data-lucide="cloud-rain"></i>`;
-      case 'drizzle': return `<i data-lucide="cloud-drizzle"></i>`;
-      case 'thunderstorm': return `<i data-lucide="cloud-lightning"></i>`;
-      case 'snow': return `<i data-lucide="snowflake"></i>`;
-      case 'mist':
-      case 'fog': return `<i data-lucide="cloud-fog"></i>`;
-      default: return `<i data-lucide="cloud"></i>`;
+      updateWeatherUI(weatherData, forecastData);
+    } catch (error) {
+      alert("Error fetching data");
     }
   }
 
-  function readThresholds(){
-    const t = parseFloat(tempThreshInput.value) || 0.5;
-    const w = parseFloat(windThreshInput.value) || 1.0;
-    const h = parseFloat(humThreshInput.value) || 5;
-    return {tempDelta: Math.abs(t), windDelta: Math.abs(w), humDelta: Math.abs(h)};
+  function updateWeatherUI(weatherData, forecastData) {
+    const temp = Math.round(weatherData.main.temp);
+    const condition = weatherData.weather[0].main;
+    const location = weatherData.name;
+    const humidity = weatherData.main.humidity;
+    const pressure = weatherData.main.pressure;
+    const wind = weatherData.wind.speed;
+    const main = condition.toLowerCase();
+
+    document.getElementById("temp").innerText = temp + "°";
+    document.getElementById("condition").innerText = condition;
+    document.getElementById("location").innerText = location;
+    document.getElementById("humidity").innerText = humidity + "%";
+    document.getElementById("pressure").innerText = pressure + " hPa";
+    document.getElementById("wind").innerText = wind + " km/h";
+    document.getElementById("uv").innerText = temp > 32 ? "High" : temp > 25 ? "Moderate" : "Low";
+
+    setBackground(main);
+    updateHourlyChart(forecastData);
+    updateForecast(forecastData);
+    showAlert(condition);
   }
 
-  // Update UI always (we only show weather fields)
-  function updateUI(data){
-    const w = data.weather && data.weather[0];
-    const main = w ? w.main : '';
-    const description = w ? w.description : '';
-    const t = data.main ? Number(data.main.temp.toFixed(1)) : null;
-    const humidity = data.main ? data.main.humidity : null;
-    const windSpeed = data.wind ? data.wind.speed : null;
-
-    iconWrap.innerHTML = getWeatherIconMarkup(main);
-    lucide.createIcons();
-    descEl.textContent = description || '--';
-    tempEl.textContent = (t !== null) ? `${t}°C` : '--';
-    humEl.textContent = humidity !== null ? `${humidity}%` : '--';
-    windEl.textContent = windSpeed !== null ? `${windSpeed} m/s` : '--';
-  }
-
-  // Determine if change is significant (and optionally notify)
-  async function handleNewWeather(data){
-    const w = data.weather && data.weather[0];
-    const id = w ? w.id : null;
-    const main = w ? w.main : '';
-    const t = data.main ? Number(data.main.temp.toFixed(1)) : null;
-    const humidity = data.main ? data.main.humidity : null;
-    const windSpeed = data.wind ? data.wind.speed : null;
-
-    // If no last state, update & set
-    if (!lastWeather) {
-      lastWeather = { id, main, temp: t, wind: windSpeed, hum: humidity };
-      updateUI(data);
-      return;
-    }
-
-    const thresholds = readThresholds();
-    let significant = false;
-    let messages = [];
-
-    // condition id change (rain / thunder / clear etc.)
-    if (id !== lastWeather.id) {
-      significant = true;
-      messages.push(`Condition changed: ${lastWeather.main || 'unknown'} → ${main}`);
-    }
-
-    // temp change
-    if (t !== null && lastWeather.temp !== null && Math.abs(t - lastWeather.temp) >= thresholds.tempDelta) {
-      significant = true;
-      messages.push(`Temp changed by ${Math.abs(t - lastWeather.temp).toFixed(1)}°C`);
-    }
-
-    // wind change
-    if (windSpeed !== null && lastWeather.wind !== null && Math.abs(windSpeed - lastWeather.wind) >= thresholds.windDelta) {
-      significant = true;
-      messages.push(`Wind changed by ${Math.abs(windSpeed - lastWeather.wind).toFixed(1)} m/s`);
-    }
-
-    // humidity change
-    if (humidity !== null && lastWeather.hum !== null && Math.abs(humidity - lastWeather.hum) >= thresholds.humDelta) {
-      significant = true;
-      messages.push(`Humidity changed by ${Math.abs(humidity - lastWeather.hum)}%`);
-    }
-
-    // If significant, update UI and optionally notify
-    if (significant) {
-      updateUI(data);
-
-      // Build a notification summary
-      if (notifyEnabled) {
-        const title = (main && /rain|thunder/i.test(main)) ? `Weather Alert: ${main}` : `Weather update`;
-        const body = messages.join(' · ');
-        triggerNotification(title, body);
-      }
-
-      // Save last
-      lastWeather = { id, main, temp: t, wind: windSpeed, hum: humidity };
-      showMsg('', false);
+  function setBackground(main) {
+    if (main.includes("cloud")) {
+      document.body.style.backgroundImage = "url('https://i.gifer.com/7scA.gif')";
+    } else if (main.includes("rain")) {
+      document.body.style.backgroundImage = "url('https://i.gifer.com/Vx1m.gif')";
+    } else if (main.includes("clear")) {
+      document.body.style.backgroundImage = "url('https://i.gifer.com/XwIu.gif')";
+    } else if (main.includes("snow")) {
+      document.body.style.backgroundImage = "url('https://i.gifer.com/Bzt5.gif')";
     } else {
-      // Not significant — update UI but message briefly
-      showMsg('No significant change', true);
-      setTimeout(()=> showMsg('', false), 1000);
+      document.body.style.backgroundImage = "url('https://i.gifer.com/fy6V.gif')";
     }
   }
 
-  // Fetch weather by coords
-  async function fetchWeatherByCoords(lat, lon){
-    try {
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Weather fetch failed');
-      const data = await res.json();
-      await handleNewWeather(data);
-    } catch (e) {
-      showMsg('Error fetching weather: ' + e.message);
-    }
-  }
-
-  // Fetch weather by city
-  async function fetchWeatherByCityName(city){
-    try {
-      showMsg('Searching city...', true);
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('City not found');
-      const data = await res.json();
-      await handleNewWeather(data);
-    } catch (e) {
-      showMsg('Error: ' + e.message);
-    }
-  }
-
-  // IP fallback
-  async function ipFallback(){
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      if (!res.ok) throw new Error('IP fallback failed');
-      const data = await res.json();
-      if (data.latitude && data.longitude) {
-        fetchWeatherByCoords(data.latitude, data.longitude);
-      } else if (data.city) {
-        fetchWeatherByCityName(data.city);
-      } else {
-        showMsg('Unable to detect location via IP.');
-      }
-    } catch (e) {
-      showMsg('IP fallback error: ' + e.message);
-    }
-  }
-
-  // Start continuous watch (no auto-clear)
-  function startWatchingLocation(){
-    if (!('geolocation' in navigator)) {
-      showMsg('Geolocation not supported — using IP fallback');
-      ipFallback();
-      return;
+  function updateHourlyChart(forecastData) {
+    const labels = [];
+    const temps = [];
+    for (let i = 0; i < 8; i++) {
+      const time = new Date(forecastData.list[i].dt_txt).getHours();
+      labels.push(time + ":00");
+      temps.push(Math.round(forecastData.list[i].main.temp));
     }
 
-    showMsg('Watching live GPS location...', true);
-
-    // if already watching, don't start another
-    if (currentWatchId !== null) return;
-
-    currentWatchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        // fetch every time coords change sufficiently
-        // small delta threshold to avoid too-frequent network calls
-        fetchWeatherByCoords(lat, lon);
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("hourlyChart"), {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: temps,
+          borderColor: "#FFD700",
+          fill: false,
+          tension: 0.3,
+          pointRadius: 3
+        }]
       },
-      (err) => {
-        console.warn('GPS error:', err);
-        showMsg('GPS failed or permission denied — using IP fallback');
-        ipFallback();
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 15000
+      options: {
+        scales: { y: { display: false } },
+        plugins: { legend: { display: false } }
       }
-    );
+    });
   }
 
-  // Notifications: ask permission and toggle
-  async function requestAndEnableNotifications(){
-    if (!('Notification' in window)) {
-      showMsg('Notifications not supported in this browser');
-      return false;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      showMsg('Please allow notifications in browser settings');
-      notifyEnabled = false;
-      notifyToggleBtn.textContent = 'Enable Alerts';
-      return false;
-    }
-    notifyEnabled = true;
-    notifyToggleBtn.textContent = 'Disable Alerts';
-    showMsg('Alerts enabled', true);
-    setTimeout(()=> showMsg('', false), 1200);
-    return true;
-  }
-
-  // Trigger a notification via service worker registration (works when page in background/ PWA)
-  async function triggerNotification(title, body){
-    try {
-      // prefer service worker showNotification if available
-      const reg = await navigator.serviceWorker.getRegistration();
-      const options = {
-        body,
-        icon: '/icons/android-chrome-192x192.png', // your icon path (optional)
-        badge: '/icons/android-chrome-96x96.png',
-        vibrate: [100,50,100],
-        tag: 'weather-alert',
-        renotify: true,
-        data: { time: Date.now() }
-      };
-      if (reg && reg.showNotification) {
-        reg.showNotification(title, options);
-      } else {
-        // fallback to Notification API
-        new Notification(title, options);
-      }
-    } catch (e) {
-      console.warn('Notify failed:', e);
+  function updateForecast(forecastData) {
+    const container = document.getElementById("forecastGrid");
+    container.innerHTML = "";
+    for (let i = 0; i < forecastData.list.length; i += 8) {
+      const day = new Date(forecastData.list[i].dt_txt).toLocaleDateString("en-US", { weekday: "short" });
+      const icon = forecastData.list[i].weather[0].icon;
+      const temp = Math.round(forecastData.list[i].main.temp);
+      container.innerHTML += `
+        <div class="forecast-card">
+          <p>${day}</p>
+          <img src="https://openweathermap.org/img/wn/${icon}.png" width="50">
+          <p>${temp}°C</p>
+        </div>`;
     }
   }
 
-  // UI events
-  searchBtn.addEventListener('click', () => {
-    const city = cityInput.value.trim();
-    if (!city) { showMsg('Enter a city name'); return; }
-    fetchWeatherByCityName(city);
-  });
-
-  locBtn.addEventListener('click', () => {
-    startWatchingLocation();
-  });
-
-  notifyToggleBtn.addEventListener('click', async () => {
-    if (notifyEnabled) {
-      notifyEnabled = false;
-      notifyToggleBtn.textContent = 'Enable Alerts';
-      showMsg('Alerts disabled', true);
-      setTimeout(()=> showMsg('', false), 800);
+  function showAlert(condition) {
+    const alertBox = document.getElementById("alertBox");
+    if (condition.toLowerCase().includes("rain")) {
+      alertBox.innerText = "🌧️ Rain expected! Carry an umbrella.";
+      alertBox.style.display = "block";
+    } else if (condition.toLowerCase().includes("clear")) {
+      alertBox.innerText = "☀️ Clear skies today!";
+      alertBox.style.display = "block";
     } else {
-      await requestAndEnableNotifications();
+      alertBox.style.display = "none";
     }
-  });
+  }
 
-  // start watching on load
-  window.addEventListener('load', () => {
-    startWatchingLocation();
-  });
-
-  // Initialize small default UI
-  updateUI({ weather: [{ main:'--', description:'--' }], main: { temp: null, humidity: null }, wind: { speed: null } });
-
+  // Default load
+  getWeather();
 </script>
 </body>
 </html>
