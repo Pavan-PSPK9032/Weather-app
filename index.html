@@ -185,6 +185,16 @@
     </div>
   </div>
 
+  <script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('✅ Service Worker registered'))
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+</script>
+
 <script>
 /* ---------- CONFIG ---------- */
 const apiKey = "3cae54db50e538875c8d7eaca5dbeb30"; // kept as in your code
@@ -233,7 +243,30 @@ searchBtn.addEventListener('click', () => {
 locBtn.addEventListener('click', () => {
   startGeolocationWatch();
 });
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
 
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent automatic prompt
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show the install button
+  installBtn.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none';
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('User choice:', outcome);
+    deferredPrompt = null;
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  console.log('✅ App installed successfully');
+});
 /* Modal handlers */
 modalClose.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
